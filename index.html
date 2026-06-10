@@ -201,35 +201,56 @@
                         <p class="text-sm text-gray-500 mt-1">Sledujte, jak zákazníci interagují s vašimi chytrými stojánky, vizitkami a samolepkami.</p>
                     </div>
                     
-                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto bg-white p-2 rounded-xl shadow-sm border border-gray-200">
-                        <div class="relative min-w-[160px]">
-                            <select id="filter-period" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
-                                <option value="month">Tento měsíc</option>
-                                <option value="last_month">Minulý měsíc</option>
-                                <option value="year" selected>Tento rok</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-end">
+                        
+                        <!-- Vlastní období (Od-Do) -->
+                        <div id="custom-date-fields" class="hidden items-end gap-2 animate-fade-in shrink-0">
+                            <div class="relative min-w-[120px]">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Od</label>
+                                <input type="date" id="date-from" onchange="updateDashboard()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm">
+                            </div>
+                            <span class="text-gray-400 font-bold pb-2">-</span>
+                            <div class="relative min-w-[120px]">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Do</label>
+                                <input type="date" id="date-to" onchange="updateDashboard()" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all shadow-sm">
+                            </div>
                         </div>
-                        <div class="w-px bg-gray-200 hidden sm:block"></div>
-                        <div class="relative min-w-[180px]">
-                            <select id="filter-branch" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
-                                <option value="all">Všechny pobočky</option>
-                                <option value="Praha 13">Praha 13</option>
-                                <option value="Liberec">Liberec</option>
-                                <option value="Brno">Brno</option>
-                                <option value="Ostrava">Ostrava</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
-                        </div>
-                        <div class="w-px bg-gray-200 hidden sm:block"></div>
-                        <div class="relative min-w-[160px]">
-                            <select id="filter-type" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
-                                <option value="all">Všechny produkty</option>
-                                <option value="Stojánek">Chytré stojánky</option>
-                                <option value="Vizitka">Chytré vizitky</option>
-                                <option value="Samolepka">Samolepky</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+
+                        <!-- Ostatní Filtry -->
+                        <div class="flex flex-col sm:flex-row gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-200 items-center w-full sm:w-auto">
+                            <div class="relative min-w-[160px]">
+                                <select id="period-select" onchange="handlePeriodChange()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                                    <option value="30d">Posledních 30 dní</option>
+                                    <option value="tm">Tento měsíc</option>
+                                    <option value="mm">Minulý měsíc</option>
+                                    <option value="tr" selected>Tento rok</option>
+                                    <option value="mr">Minulý rok</option>
+                                    <option value="all">Celé období</option>
+                                    <option value="custom">Vlastní (výběr)</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                            </div>
+                            <div class="w-px h-6 bg-gray-200 hidden sm:block"></div>
+                            <div class="relative min-w-[180px]">
+                                <select id="filter-branch" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                                    <option value="all">Všechny pobočky</option>
+                                    <option value="Praha 13">Praha 13</option>
+                                    <option value="Liberec">Liberec</option>
+                                    <option value="Brno">Brno</option>
+                                    <option value="Ostrava">Ostrava</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                            </div>
+                            <div class="w-px h-6 bg-gray-200 hidden sm:block"></div>
+                            <div class="relative min-w-[160px]">
+                                <select id="filter-type" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                                    <option value="all">Všechny produkty</option>
+                                    <option value="Stojánek">Chytré stojánky</option>
+                                    <option value="Vizitka">Chytré vizitky</option>
+                                    <option value="Samolepka">Samolepky</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -389,13 +410,23 @@
         }
 
         function renderTable() {
-            const periodFilter = document.getElementById('filter-period').value;
+            const periodSelect = document.getElementById('period-select');
+            const periodFilter = periodSelect ? periodSelect.value : 'tr';
             const branchFilter = document.getElementById('filter-branch').value;
             const typeFilter = document.getElementById('filter-type').value;
             const searchVal = document.getElementById('table-search').value.toLowerCase();
 
-            // Aplikace multiplikátoru podle období pro efekt
-            let multiplier = periodFilter === 'year' ? 1 : periodFilter === 'month' ? 0.1 : 0.08;
+            // Aplikace multiplikátoru podle období pro dynamický efekt
+            let multiplier = 1.0;
+            switch(periodFilter) {
+                case '30d': multiplier = 0.2; break;
+                case 'tm': multiplier = 0.1; break;
+                case 'mm': multiplier = 0.15; break;
+                case 'tr': multiplier = 1.0; break;
+                case 'mr': multiplier = 2.0; break;
+                case 'all': multiplier = 5.0; break;
+                case 'custom': multiplier = 0.3; break;
+            }
 
             let filteredData = baseProductsData.filter(p => {
                 if (branchFilter !== 'all' && p.branch !== branchFilter) return false;
@@ -544,6 +575,97 @@
                 newLabels = ['1. týden', '2. týden', '3. týden', '4. týden'];
                 newData = [25, 30, 35, 20];
             }
+
+            // Rozbití dat na základě filtru pobočky/typu pro reálnější dojem
+            const branchF = document.getElementById('filter-branch').value;
+            const typeF = document.getElementById('filter-type').value;
+            let modifier = 1;
+            if (branchF !== 'all') modifier *= 0.4;
+            if (typeF !== 'all') modifier *= 0.6;
+
+            newData = newData.map(v => Math.round(v * modifier));
+
+            // Aplikace vybrané metriky pro graf (Načtení vs Recenze)
+            if (currentChartMetric === 'reviews') {
+                newData = newData.map(v => Math.round(v * 0.25)); // Přibližně 25% konverze na recenze
+                trendChart.data.datasets[0].label = 'Počet recenzí';
+            } else {
+                trendChart.data.datasets[0].label = 'Počet načtení';
+            }
+
+            trendChart.data.labels = newLabels;
+            trendChart.data.datasets[0].data = newData;
+            trendChart.update();
+        }
+
+        function handlePeriodChange() {
+            const period = document.getElementById('period-select').value;
+            const customFields = document.getElementById('custom-date-fields');
+            
+            if (period === 'custom') {
+                customFields.classList.remove('hidden');
+                customFields.classList.add('flex');
+                
+                const today = new Date().toISOString().split('T')[0];
+                if (!document.getElementById('date-from').value) document.getElementById('date-from').value = today;
+                if (!document.getElementById('date-to').value) document.getElementById('date-to').value = today;
+            } else {
+                customFields.classList.add('hidden');
+                customFields.classList.remove('flex');
+            }
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            renderTable();
+            
+            const periodSelect = document.getElementById('period-select');
+            const period = periodSelect ? periodSelect.value : 'tr';
+            let newLabels = [];
+            let distribution = [];
+
+            switch(period) {
+                case '30d': 
+                    newLabels = ['Před 30 d.', 'Před 24 d.', 'Před 18 d.', 'Před 12 d.', 'Před 6 d.', 'Dnes']; 
+                    distribution = [0.15, 0.15, 0.18, 0.12, 0.25, 0.15];
+                    break;
+                case 'tm': 
+                case 'mm': 
+                    newLabels = Array.from({length: 30}, (_, i) => (i + 1) + '.');
+                    let baseDist = [0.03,0.04,0.02,0.03,0.05,0.06,0.02, 0.03,0.04,0.03,0.03,0.05,0.04,0.02, 0.02,0.03,0.04,0.05,0.04,0.02,0.02, 0.03,0.04,0.04,0.03,0.05,0.04,0.03,0.02,0.01];
+                    let sumBase = baseDist.reduce((a,b) => a+b, 0);
+                    distribution = baseDist.map(v => v/sumBase);
+                    break;
+                case 'tr': 
+                case 'mr': 
+                    newLabels = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']; 
+                    distribution = [0.05, 0.06, 0.08, 0.09, 0.10, 0.12, 0.11, 0.09, 0.08, 0.07, 0.09, 0.06];
+                    break;
+                case 'all': 
+                    newLabels = ['2021', '2022', '2023', '2024', '2025', '2026']; 
+                    distribution = [0.05, 0.10, 0.15, 0.20, 0.25, 0.25];
+                    break;
+                case 'custom': 
+                    const dF = document.getElementById('date-from').value;
+                    const dT = document.getElementById('date-to').value;
+                    if(dF && dT) {
+                        const dateFrom = new Date(dF).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+                        const dateTo = new Date(dT).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
+                        newLabels = [dateFrom, '', '', '', '', dateTo]; 
+                    } else {
+                        newLabels = ['Začátek', '', '', '', '', 'Konec'];
+                    }
+                    distribution = [0.15, 0.15, 0.18, 0.12, 0.25, 0.15];
+                    break;
+            }
+
+            let baseTotal = 1850; 
+            if (period === '30d') baseTotal = 300;
+            if (period === 'tm' || period === 'mm') baseTotal = 350;
+            if (period === 'all') baseTotal = 5500;
+            if (period === 'custom') baseTotal = 450;
+
+            let newData = distribution.map(factor => Math.round(baseTotal * factor));
 
             // Rozbití dat na základě filtru pobočky/typu pro reálnější dojem
             const branchF = document.getElementById('filter-branch').value;
