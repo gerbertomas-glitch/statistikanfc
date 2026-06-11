@@ -201,47 +201,52 @@
         <main class="flex-1 overflow-y-auto relative bg-gray-100 custom-scrollbar flex flex-col">
             
             <!-- TOP FIXNÍ FILTRY -->
-            <div class="bg-white border-b border-gray-200 px-4 sm:px-8 py-4 shrink-0 z-10 sticky top-0 shadow-sm">
+            <div class="bg-white border-b border-gray-200 px-4 sm:px-8 py-4 shrink-0 z-30 sticky top-0 shadow-sm">
                 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     
-                    <div class="w-full md:w-80 relative" id="filter-wrapper">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Zdroj dat (Pobočky)</label>
-                        <div class="relative flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all shadow-inner cursor-pointer" onclick="toggleBranchDropdown()">
-                            <i class="fa-solid fa-store text-brand-500 mr-2.5"></i>
-                            <input type="text" id="branch-search" class="text-sm font-bold text-gray-900 bg-transparent border-none focus:outline-none w-full cursor-pointer pointer-events-none" value="Vybrány všechny pobočky" readonly>
-                            <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs"></i>
+                    <!-- LEVÁ ČÁST S FILTRY (Pobočky + Typ produktu) -->
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-4 w-full md:w-auto flex-1">
+                        
+                        <div class="w-full md:w-80 relative shrink-0" id="filter-wrapper">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Zdroj dat (Pobočky)</label>
+                            <div class="relative flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all shadow-inner cursor-pointer" onclick="toggleBranchDropdown()">
+                                <i class="fa-solid fa-store text-brand-500 mr-2.5"></i>
+                                <input type="text" id="branch-search" class="text-sm font-bold text-gray-900 bg-transparent border-none focus:outline-none w-full cursor-pointer pointer-events-none pr-6" value="Vybrány všechny pobočky" readonly>
+                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 text-xs"></i>
+                            </div>
+
+                            <!-- Našeptávač / Výběr s Checkboxy -->
+                            <div id="branch-dropdown" class="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 hidden flex-col overflow-hidden">
+                                <div class="p-2 border-b border-gray-100 bg-gray-50 shrink-0">
+                                    <input type="text" id="branch-search-input" onkeyup="filterList()" onclick="event.stopPropagation();" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 mb-2" placeholder="Hledat pobočku...">
+                                    <label class="flex items-center gap-2 px-2 cursor-pointer">
+                                        <input type="checkbox" id="master-branch-checkbox" onchange="toggleAllSourceBranches(this)" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" checked>
+                                        <span class="text-xs font-bold text-gray-700">Vybrat všechny</span>
+                                    </label>
+                                </div>
+                                <div class="p-1 max-h-60 overflow-y-auto custom-scrollbar" id="branch-list-items">
+                                    <!-- Generováno JS dole -->
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Našeptávač / Výběr s Checkboxy -->
-                        <div id="branch-dropdown" class="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 hidden flex-col overflow-hidden">
-                            <div class="p-2 border-b border-gray-100 bg-gray-50 shrink-0">
-                                <input type="text" id="branch-search-input" onkeyup="filterList()" onclick="event.stopPropagation();" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 mb-2" placeholder="Hledat pobočku...">
-                                <label class="flex items-center gap-2 px-2 cursor-pointer">
-                                    <input type="checkbox" id="master-branch-checkbox" onchange="toggleAllSourceBranches(this)" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" checked>
-                                    <span class="text-xs font-bold text-gray-700">Vybrat všechny</span>
-                                </label>
-                            </div>
-                            <div class="p-1 max-h-60 overflow-y-auto custom-scrollbar" id="branch-list-items">
-                                <!-- Generováno JS dole -->
+                        <div class="relative min-w-[180px] shrink-0 w-full md:w-auto">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Typ produktu</label>
+                            <div class="relative flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer transition-colors hover:border-gray-400">
+                                <i class="fa-solid fa-wifi text-gray-400 mr-2.5"></i>
+                                <select id="filter-type" onchange="updateDashboard()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer pr-8">
+                                    <option value="all">Všechny produkty</option>
+                                    <option value="stojánek">Chytré stojánky</option>
+                                    <option value="vizitka">Chytré vizitky</option>
+                                    <option value="samolepka">Samolepky</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs pointer-events-none absolute right-3"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="relative min-w-[180px] shrink-0">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Typ produktu</label>
-                        <div class="relative flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer transition-colors hover:border-gray-400">
-                            <i class="fa-solid fa-wifi text-gray-400 mr-2.5"></i>
-                            <select id="filter-type" onchange="updateDashboard()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer">
-                                <option value="all">Všechny produkty</option>
-                                <option value="stojánek">Chytré stojánky</option>
-                                <option value="vizitka">Chytré vizitky</option>
-                                <option value="samolepka">Samolepky</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs pointer-events-none absolute right-3"></i>
-                        </div>
-                    </div>
-
-                    <div class="flex items-end gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                    <!-- PRAVÁ ČÁST S OBDOBÍM -->
+                    <div class="flex items-end gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 shrink-0">
                         <!-- Custom Date Fields -->
                         <div id="custom-date-fields" class="hidden items-end gap-2 animate-fade-in shrink-0">
                             <div class="relative min-w-[120px]">
@@ -259,7 +264,7 @@
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Období</label>
                             <div class="relative flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer transition-colors hover:border-gray-400">
                                 <i class="fa-regular fa-calendar text-gray-400 mr-2.5"></i>
-                                <select id="period-select" onchange="handlePeriodChange()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer">
+                                <select id="period-select" onchange="handlePeriodChange()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer pr-8">
                                     <option value="30d">Posledních 30 dní</option>
                                     <option value="tm">Tento měsíc</option>
                                     <option value="mm">Minulý měsíc</option>
@@ -268,7 +273,7 @@
                                     <option value="all">Celé období (Vše)</option>
                                     <option value="custom">Vlastní (výběr)</option>
                                 </select>
-                                <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs pointer-events-none absolute right-3"></i>
+                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs pointer-events-none absolute right-3"></i>
                             </div>
                         </div>
                     </div>
