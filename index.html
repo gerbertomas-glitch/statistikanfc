@@ -66,6 +66,13 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .medal-1 { color: #fbbf24; text-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }
+        .medal-2 { color: #9ca3af; text-shadow: 0 2px 4px rgba(156, 163, 175, 0.3); }
+        .medal-3 { color: #b45309; text-shadow: 0 2px 4px rgba(180, 83, 9, 0.3); }
     </style>
 </head>
 <body class="font-sans text-gray-900 h-screen flex overflow-hidden antialiased">
@@ -190,20 +197,52 @@
             </div>
         </header>
 
-        <!-- HLAVNÍ PLOCHA -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-8 relative bg-gray-100 custom-scrollbar">
-            <div class="max-w-7xl mx-auto space-y-6">
-                
-                <!-- Nadpis a Filtry -->
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-2">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Analytika NFC produktů</h2>
-                        <p class="text-sm text-gray-500 mt-1">Sledujte, jak zákazníci interagují s vašimi chytrými stojánky, vizitkami a samolepkami.</p>
-                    </div>
+        <!-- HLAVNÍ PLOCHA DASHBOARDU -->
+        <main class="flex-1 overflow-y-auto relative bg-gray-100 custom-scrollbar flex flex-col">
+            
+            <!-- TOP FIXNÍ FILTRY -->
+            <div class="bg-white border-b border-gray-200 px-4 sm:px-8 py-4 shrink-0 z-10 sticky top-0 shadow-sm">
+                <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     
-                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto items-end">
-                        
-                        <!-- Vlastní období (Od-Do) -->
+                    <div class="w-full md:w-80 relative" id="filter-wrapper">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Zdroj dat (Pobočky)</label>
+                        <div class="relative flex items-center bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all shadow-inner cursor-pointer" onclick="toggleBranchDropdown()">
+                            <i class="fa-solid fa-store text-brand-500 mr-2.5"></i>
+                            <input type="text" id="branch-search" class="text-sm font-bold text-gray-900 bg-transparent border-none focus:outline-none w-full cursor-pointer pointer-events-none" value="Vybrány všechny pobočky" readonly>
+                            <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs"></i>
+                        </div>
+
+                        <!-- Našeptávač / Výběr s Checkboxy -->
+                        <div id="branch-dropdown" class="absolute left-0 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl z-50 hidden flex-col overflow-hidden">
+                            <div class="p-2 border-b border-gray-100 bg-gray-50 shrink-0">
+                                <input type="text" id="branch-search-input" onkeyup="filterList()" onclick="event.stopPropagation();" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 mb-2" placeholder="Hledat pobočku...">
+                                <label class="flex items-center gap-2 px-2 cursor-pointer">
+                                    <input type="checkbox" id="master-branch-checkbox" onchange="toggleAllSourceBranches(this)" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500" checked>
+                                    <span class="text-xs font-bold text-gray-700">Vybrat všechny</span>
+                                </label>
+                            </div>
+                            <div class="p-1 max-h-60 overflow-y-auto custom-scrollbar" id="branch-list-items">
+                                <!-- Generováno JS dole -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative min-w-[180px] shrink-0">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Typ produktu</label>
+                        <div class="relative flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer transition-colors hover:border-gray-400">
+                            <i class="fa-solid fa-wifi text-gray-400 mr-2.5"></i>
+                            <select id="filter-type" onchange="updateDashboard()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer">
+                                <option value="all">Všechny produkty</option>
+                                <option value="stojánek">Chytré stojánky</option>
+                                <option value="vizitka">Chytré vizitky</option>
+                                <option value="samolepka">Samolepky</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs pointer-events-none absolute right-3"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex items-end gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                        <!-- Custom Date Fields -->
                         <div id="custom-date-fields" class="hidden items-end gap-2 animate-fade-in shrink-0">
                             <div class="relative min-w-[120px]">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Od</label>
@@ -216,141 +255,280 @@
                             </div>
                         </div>
 
-                        <!-- Ostatní Filtry -->
-                        <div class="flex flex-col sm:flex-row gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-200 items-center w-full sm:w-auto">
-                            <div class="relative min-w-[160px]">
-                                <select id="period-select" onchange="handlePeriodChange()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
+                        <div class="relative min-w-[180px] shrink-0">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Období</label>
+                            <div class="relative flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer transition-colors hover:border-gray-400">
+                                <i class="fa-regular fa-calendar text-gray-400 mr-2.5"></i>
+                                <select id="period-select" onchange="handlePeriodChange()" class="text-sm font-medium text-gray-900 bg-transparent border-none focus:outline-none w-full appearance-none cursor-pointer">
                                     <option value="30d">Posledních 30 dní</option>
                                     <option value="tm">Tento měsíc</option>
                                     <option value="mm">Minulý měsíc</option>
                                     <option value="tr" selected>Tento rok</option>
                                     <option value="mr">Minulý rok</option>
-                                    <option value="all">Celé období</option>
+                                    <option value="all">Celé období (Vše)</option>
                                     <option value="custom">Vlastní (výběr)</option>
                                 </select>
-                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
-                            </div>
-                            <div class="w-px h-6 bg-gray-200 hidden sm:block"></div>
-                            <div class="relative min-w-[180px]">
-                                <select id="filter-branch" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
-                                    <option value="all">Všechny pobočky</option>
-                                    <option value="Praha 13">Praha 13</option>
-                                    <option value="Liberec">Liberec</option>
-                                    <option value="Brno">Brno</option>
-                                    <option value="Ostrava">Ostrava</option>
-                                </select>
-                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
-                            </div>
-                            <div class="w-px h-6 bg-gray-200 hidden sm:block"></div>
-                            <div class="relative min-w-[160px]">
-                                <select id="filter-type" onchange="updateDashboard()" class="w-full bg-transparent text-sm font-semibold text-gray-800 py-2 pl-3 pr-8 focus:outline-none appearance-none cursor-pointer">
-                                    <option value="all">Všechny produkty</option>
-                                    <option value="Stojánek">Chytré stojánky</option>
-                                    <option value="Vizitka">Chytré vizitky</option>
-                                    <option value="Samolepka">Samolepky</option>
-                                </select>
-                                <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                                <i class="fa-solid fa-chevron-down text-gray-400 ml-2 text-xs pointer-events-none absolute right-3"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- KPI Karty -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group">
-                        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-mobile-screen text-blue-500 text-3xl opacity-20"></i>
+                <!-- SUB-NAVIGACE (TABS) -->
+                <div class="max-w-7xl mx-auto mt-4 border-b border-gray-200 flex overflow-x-auto hide-scrollbar px-4 sm:px-8">
+                    <button onclick="switchTab('tab-prehled')" id="btn-tab-prehled" class="whitespace-nowrap py-3 px-5 border-b-2 font-bold text-sm transition-colors border-brand-500 text-brand-600">
+                        <i class="fa-solid fa-table-cells-large mr-2"></i> Číselný přehled
+                    </button>
+                    <button onclick="switchTab('tab-porovnani'); initCompareCharts();" id="btn-tab-porovnani" class="whitespace-nowrap py-3 px-5 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fa-solid fa-code-compare mr-2"></i> Porovnání poboček
+                    </button>
+                    <button onclick="switchTab('tab-skupiny'); initGroupCharts();" id="btn-tab-skupiny" class="whitespace-nowrap py-3 px-5 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fa-solid fa-users-viewfinder mr-2"></i> Týmy a Skupiny
+                    </button>
+                </div>
+            </div>
+
+            <!-- OBSAH TABŮ -->
+            <div class="p-4 sm:p-8 max-w-7xl mx-auto w-full pt-4">
+                
+                <!-- TAB 1: PŘEHLED -->
+                <div id="tab-prehled" class="space-y-6 block">
+                    <!-- KPI Karty -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-mobile-screen text-blue-500 text-3xl opacity-20"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Kolikrát byl produkt celkem načten přiložením telefonu">
+                                    Počet načtení (Pípnutí) <i class="fa-solid fa-circle-info text-gray-300"></i>
+                                </h3>
+                                <div class="flex items-baseline gap-3 mb-1">
+                                    <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-scans">1,240</h2>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Kolikrát byl produkt celkem načten přiložením telefonu">
-                                Počet načtení (Pípnutí) <i class="fa-solid fa-circle-info text-gray-300"></i>
-                            </h3>
-                            <div class="flex items-baseline gap-3 mb-1">
-                                <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-scans">1,240</h2>
-                                <span id="trend-scans" class="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +12%</span>
+
+                        <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fa-regular fa-star text-yellow-500 text-3xl opacity-20"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Počet reálně získaných Google recenzí pomocí NFC">
+                                    Získané recenze <i class="fa-solid fa-circle-info text-gray-300"></i>
+                                </h3>
+                                <div class="flex items-baseline gap-3 mb-1">
+                                    <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-reviews">310</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group border-brand-200 bg-brand-50/10">
+                            <div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-bolt text-brand-500 text-3xl opacity-20"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-[11px] font-bold text-brand-600 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Procento načtení, které skončilo udělením recenze">
+                                    Konverzní poměr <i class="fa-solid fa-circle-info text-brand-300"></i>
+                                </h3>
+                                <div class="flex items-baseline gap-3 mb-1">
+                                    <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-conversion">25.0%</h2>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group">
-                        <div class="absolute -right-6 -top-6 w-24 h-24 bg-yellow-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="fa-regular fa-star text-yellow-500 text-3xl opacity-20"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Počet reálně získaných Google recenzí pomocí NFC">
-                                Získané recenze <i class="fa-solid fa-circle-info text-gray-300"></i>
+                    <!-- Graf Vývoje -->
+                    <div class="card-minimal p-6">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                                Vývoj používání NFC produktů v čase
                             </h3>
-                            <div class="flex items-baseline gap-3 mb-1">
-                                <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-reviews">310</h2>
-                                <span id="trend-reviews" class="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> +5%</span>
+                            <!-- Přepínač zobrazení na grafu -->
+                            <div class="bg-gray-100 p-1 rounded-lg flex text-xs font-medium border border-gray-200">
+                                <button id="btn-metric-scans" onclick="toggleChartMetric('scans')" class="px-4 py-1.5 rounded bg-white shadow text-gray-900 transition">Načtení</button>
+                                <button id="btn-metric-reviews" onclick="toggleChartMetric('reviews')" class="px-4 py-1.5 rounded text-gray-500 hover:text-gray-900 transition">Recenze</button>
                             </div>
+                        </div>
+                        
+                        <div class="relative h-72 w-full">
+                            <canvas id="nfcTrendChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="card-minimal p-6 flex flex-col justify-between relative overflow-hidden group border-brand-200 bg-brand-50/10">
-                        <div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-bolt text-brand-500 text-3xl opacity-20"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-[11px] font-bold text-brand-600 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-help" title="Procento načtení, které skončilo udělením recenze">
-                                Konverzní poměr <i class="fa-solid fa-circle-info text-brand-300"></i>
-                            </h3>
-                            <div class="flex items-baseline gap-3 mb-1">
-                                <h2 class="text-4xl font-bold text-gray-900 tracking-tight" id="val-conversion">25.0%</h2>
-                                <span id="trend-conversion" class="text-sm font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down"></i> -1.2%</span>
+                    <!-- Tabulka Produktů -->
+                    <div class="card-minimal overflow-hidden">
+                        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="text-base font-bold text-gray-900">Výkon jednotlivých produktů</h3>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <input type="text" id="table-search" onkeyup="renderTable()" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 pl-8 text-xs focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-shadow w-64" placeholder="Hledat produkt nebo zaměstnance...">
                             </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-white border-b border-gray-200">
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('name')">Název / Zaměstnanec <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('branch')">Pobočka <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('type')">Typ <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('scans')">Načtení <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('reviews')">Recenze <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                        <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('conversion')">Konverze <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nfc-stats-tbody" class="divide-y divide-gray-100 bg-white">
+                                    <!-- Vygenerováno JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- Graf Vývoje -->
-                <div class="card-minimal p-6 mb-6">
-                    <div class="flex justify-between items-start mb-6">
-                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-                            Vývoj používání NFC produktů v čase
-                        </h3>
-                        <!-- Přepínač zobrazení na grafu -->
-                        <div class="bg-gray-100 p-1 rounded-lg flex text-xs font-medium border border-gray-200">
-                            <button id="btn-metric-scans" onclick="toggleChartMetric('scans')" class="px-4 py-1.5 rounded bg-white shadow text-gray-900 transition">Načtení</button>
-                            <button id="btn-metric-reviews" onclick="toggleChartMetric('reviews')" class="px-4 py-1.5 rounded text-gray-500 hover:text-gray-900 transition">Recenze</button>
-                        </div>
-                    </div>
+                <!-- TAB 2: POROVNÁNÍ POBOČEK (NFC) -->
+                <div id="tab-porovnani" class="hidden space-y-8">
                     
-                    <div class="relative h-72 w-full">
-                        <canvas id="nfcTrendChart"></canvas>
+                    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sticky top-[132px] z-10">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg">Porovnání poboček (NFC)</h3>
+                            <p class="text-sm text-gray-500 mt-1">Vyberte pobočky pro vzájemné srovnání výkonnosti NFC produktů.</p>
+                        </div>
+                        <div class="w-full md:w-96 relative">
+                            <div class="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 cursor-pointer hover:border-gray-400 transition" onclick="toggleCompareDropdown()">
+                                <i class="fa-solid fa-code-compare text-brand-500 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-700 flex-1" id="compare-count-label">Vybrány všechny pobočky</span>
+                                <i class="fa-solid fa-chevron-down text-gray-400 ml-auto text-xs"></i>
+                            </div>
+                            <div id="compare-dropdown" class="absolute left-0 top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-50 hidden flex-col overflow-hidden">
+                                <div class="p-3 border-b border-gray-100 bg-gray-50 shrink-0">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Vyberte pobočky k porovnání (max 10)</p>
+                                    <input type="text" id="compare-branch-search" onkeyup="filterCompareBranches()" onclick="event.stopPropagation();" class="w-full bg-white border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 mb-2" placeholder="Hledat pobočku...">
+                                    <div class="max-h-60 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-1" id="compare-dropdown-list">
+                                        <!-- Generováno JS -->
+                                    </div>
+                                </div>
+                                <div class="p-2 bg-white text-right shrink-0">
+                                    <button onclick="toggleCompareDropdown()" class="text-xs font-bold text-brand-600 hover:text-brand-700 px-3 py-1.5 rounded hover:bg-brand-50 transition">Dokončit výběr</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-minimal overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <h3 class="font-bold text-gray-900 text-base whitespace-nowrap"><i class="fa-solid fa-wifi text-brand-500 mr-2"></i> Výkon NFC Produktů</h3>
+                            <div class="flex overflow-x-auto hide-scrollbar gap-2 w-full md:w-auto" id="comp-tabs-nfc">
+                                <button onclick="setCompMetric('scans', 'Počet načtení')" data-metric="scans" class="px-3 py-1.5 text-xs font-bold bg-white border border-gray-200 rounded shadow-sm text-brand-600 border-brand-200 whitespace-nowrap">Počet načtení</button>
+                                <button onclick="setCompMetric('reviews', 'Získané recenze')" data-metric="reviews" class="px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">Získané recenze</button>
+                                <button onclick="setCompMetric('conversion', 'Konverzní poměr')" data-metric="conversion" class="px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">Konverzní poměr</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col lg:flex-row">
+                            <div class="w-full lg:w-1/3 border-b lg:border-b-0 lg:border-r border-gray-100 p-5 bg-white">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-4" id="title-comp-leaderboard">Žebříček (Počet načtení)</p>
+                                <div id="comp-leaderboard" class="space-y-1"></div>
+                            </div>
+                            <div class="w-full lg:w-2/3 p-6 bg-white flex flex-col justify-center">
+                                <div class="relative h-64 w-full"><canvas id="compChart"></canvas></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tabulka Produktů -->
-                <div class="card-minimal overflow-hidden">
-                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 class="text-base font-bold text-gray-900">Výkon jednotlivých produktů</h3>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"></i>
-                            <input type="text" id="table-search" onkeyup="renderTable()" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 pl-8 text-xs focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-shadow w-64" placeholder="Hledat produkt nebo zaměstnance...">
+                <!-- TAB 3: TÝMY A SKUPINY (NFC) -->
+                <div id="tab-skupiny" class="hidden space-y-8">
+                    
+                    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sticky top-[132px] z-10">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg">Porovnání Týmů a Skupin</h3>
+                            <p class="text-sm text-gray-500 mt-1">Sdružujte pobočky do celků a analyzujte jejich NFC výkon proti sobě.</p>
+                        </div>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <button class="bg-brand-50 text-brand-600 px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-brand-100 transition shadow-sm border border-brand-200" onclick="openCreateGroupModal()">
+                                <i class="fa-solid fa-plus mr-1"></i> Vytvořit skupinu
+                            </button>
+                            <div class="w-full md:w-80 relative">
+                                <div class="flex items-center bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 cursor-pointer hover:border-gray-400 transition" onclick="toggleGroupDropdown()">
+                                    <i class="fa-solid fa-users-viewfinder text-brand-500 mr-2"></i>
+                                    <span class="text-sm font-medium text-gray-700 flex-1" id="group-count-label">Vybrány 2 skupiny</span>
+                                    <i class="fa-solid fa-chevron-down text-gray-400 ml-auto text-xs"></i>
+                                </div>
+                                <div id="group-dropdown" class="absolute left-0 top-full mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-50 hidden flex-col overflow-hidden">
+                                    <div class="p-3 border-b border-gray-100 bg-gray-50 shrink-0">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Vyberte skupiny k porovnání</p>
+                                        <div class="max-h-60 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-1" id="group-dropdown-list">
+                                            <!-- Generováno JS -->
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bg-white text-right shrink-0">
+                                        <button onclick="toggleGroupDropdown()" class="text-xs font-bold text-brand-600 hover:text-brand-700 px-3 py-1.5 rounded hover:bg-brand-50 transition">Dokončit výběr</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-white border-b border-gray-200">
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('name')">Název / Zaměstnanec <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('branch')">Pobočka <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('type')">Typ <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('scans')">Načtení <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('reviews')">Recenze <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                    <th class="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right cursor-pointer hover:bg-gray-50 transition" onclick="sortTable('conversion')">Konverze <i class="fa-solid fa-sort ml-1 text-gray-300"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody id="nfc-stats-tbody" class="divide-y divide-gray-100 bg-white">
-                                <!-- Vygenerováno JS -->
-                            </tbody>
-                        </table>
+
+                    <div class="card-minimal overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <h3 class="font-bold text-gray-900 text-base whitespace-nowrap"><i class="fa-solid fa-wifi text-brand-500 mr-2"></i> Výkon NFC Produktů (Týmy)</h3>
+                            <div class="flex overflow-x-auto hide-scrollbar gap-2 w-full md:w-auto" id="group-tabs-nfc">
+                                <button onclick="setGroupMetric('scans', 'Počet načtení')" data-metric="scans" class="px-3 py-1.5 text-xs font-bold bg-white border border-gray-200 rounded shadow-sm text-brand-600 border-brand-200 whitespace-nowrap">Počet načtení</button>
+                                <button onclick="setGroupMetric('reviews', 'Získané recenze')" data-metric="reviews" class="px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">Získané recenze</button>
+                                <button onclick="setGroupMetric('conversion', 'Konverzní poměr')" data-metric="conversion" class="px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">Konverzní poměr</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-col lg:flex-row">
+                            <div class="w-full lg:w-1/3 border-b lg:border-b-0 lg:border-r border-gray-100 p-5 bg-white">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-4" id="title-group-leaderboard">Žebříček (Počet načtení)</p>
+                                <div id="group-leaderboard" class="space-y-1"></div>
+                            </div>
+                            <div class="w-full lg:w-2/3 p-6 bg-white flex flex-col justify-center">
+                                <div class="relative h-64 w-full"><canvas id="groupChart"></canvas></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
             </div>
         </main>
+    </div>
+
+    <!-- MODAL PRO VYTVOŘENÍ SKUPINY -->
+    <div id="create-group-modal" class="fixed inset-0 bg-gray-900/60 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl transform scale-95 transition-transform duration-300 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 id="modal-group-title" class="text-lg font-bold text-gray-900">Vytvořit novou skupinu / tým</h3>
+                <button onclick="closeCreateGroupModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
+                <div>
+                    <label class="label-minimal">Název skupiny</label>
+                    <input type="text" id="new-group-name" class="input-minimal" placeholder="Např. Tým Morava, Manažer Novák...">
+                </div>
+                <div>
+                    <label class="label-minimal">Vyberte pobočky pro tuto skupinu</label>
+                    <div class="relative mb-3 mt-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="create-group-search" onkeyup="filterCreateGroupBranches()" class="input-minimal pl-9" placeholder="Hledat pobočku...">
+                    </div>
+                    <div class="border border-gray-200 rounded-lg max-h-48 overflow-y-auto bg-gray-50/50 custom-scrollbar" id="create-group-branch-list">
+                        <!-- Generováno JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 shrink-0">
+                <button onclick="closeCreateGroupModal()" class="px-5 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition shadow-sm">Zrušit</button>
+                <button onclick="submitCreateGroup()" class="px-5 py-2 rounded-lg text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 transition shadow-sm">Uložit skupinu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFIKACE -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-lg shadow-xl opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3">
+        <i class="fa-solid fa-circle-check text-brand-500"></i>
+        <span id="toast-message" class="text-sm font-medium">Akce byla úspěšná</span>
     </div>
 
     <script>
@@ -376,7 +554,38 @@
             }
         }
 
-        // Mock data pro tabulku
+        // TABS přepínání
+        function switchTab(tabId) {
+            const tabs = ['tab-prehled', 'tab-porovnani', 'tab-skupiny'];
+            tabs.forEach(t => {
+                document.getElementById(t).classList.add('hidden');
+                document.getElementById(t).classList.remove('block');
+                document.getElementById('btn-' + t).className = 'whitespace-nowrap py-3 px-5 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+            document.getElementById('btn-' + tabId).className = 'whitespace-nowrap py-3 px-5 border-b-2 font-bold text-sm transition-colors border-brand-500 text-brand-600';
+            
+            const mainContainer = document.querySelector('main');
+            if (mainContainer) mainContainer.scrollTop = 0;
+        }
+
+        // TOAST
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if(!toast) return;
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 3000);
+        }
+
+        // --- DATA a GLOBÁLNÍ PROMĚNNÉ ---
         let baseProductsData = [
             { id: 'NFC-101', name: "Recepce", type: "Stojánek", branch: "Praha 13", scans: 450, reviews: 112 },
             { id: 'NFC-102', name: "Vstup", type: "Stojánek", branch: "Praha 13", scans: 320, reviews: 64 },
@@ -385,52 +594,168 @@
             { id: 'NFC-106', name: "Bankéř 1", type: "Stojánek", branch: "Brno", scans: 110, reviews: 22 },
             { id: 'NFC-107', name: "Toaleta", type: "Samolepka", branch: "Ostrava", scans: 65, reviews: 8 },
             { id: 'NFC-108', name: "Pokladna", type: "Samolepka", branch: "Ostrava", scans: 40, reviews: 12 },
-            { id: 'NFC-109', name: "Vstup", type: "Samolepka", branch: "Liberec", scans: 20, reviews: 5 }
+            { id: 'NFC-109', name: "Vstup", type: "Samolepka", branch: "Liberec", scans: 20, reviews: 5 },
+            { id: 'NFC-110', name: "Terasa", type: "Samolepka", branch: "Plzeň", scans: 45, reviews: 15 }
         ];
+        
+        const branches = [...new Set(baseProductsData.map(p => p.branch))];
+        let sourceSelection = [...branches];
+        let compareSelection = [...branches];
+        let customGroups = [
+            { name: 'Tým Sever', branches: ['Praha 13', 'Liberec', 'Plzeň'] },
+            { name: 'Tým Morava', branches: ['Brno', 'Ostrava'] }
+        ];
+        let compareGroupSelection = ['Tým Sever', 'Tým Morava'];
 
         let currentSort = { column: 'scans', asc: false };
         let trendChart = null;
         let currentChartMetric = 'scans';
+        
+        let compChart = null, groupChart = null;
+        let compMetric = 'scans', groupMetric = 'scans';
 
         // Ikony pro typy
         function getIcon(type) {
-            if(type === 'Stojánek') return '<i class="fa-solid fa-mobile-screen text-blue-500"></i>';
-            if(type === 'Vizitka') return '<i class="fa-regular fa-id-badge text-purple-500"></i>';
+            if(type.toLowerCase() === 'stojánek') return '<i class="fa-solid fa-mobile-screen text-blue-500"></i>';
+            if(type.toLowerCase() === 'vizitka') return '<i class="fa-regular fa-id-badge text-purple-500"></i>';
             return '<i class="fa-solid fa-note-sticky text-amber-500"></i>';
         }
 
+        // --- ZDROJ DAT (ZAŠKRTÁVÁTKA) ---
+        function toggleBranchDropdown() {
+            const dropdown = document.getElementById('branch-dropdown');
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                document.getElementById('branch-search-input').focus();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function renderSourceCheckboxes() {
+            const container = document.getElementById('branch-list-items');
+            if(!container) return;
+            let html = '';
+            branches.forEach(b => {
+                const checked = sourceSelection.includes(b) ? 'checked' : '';
+                html += `
+                <label class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer transition filter-opt">
+                    <input type="checkbox" value="${b}" onchange="updateSourceSelection(this)" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 source-cb" ${checked}>
+                    <span>${b}</span>
+                </label>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateSourceSelection(checkbox) {
+            if (checkbox.checked) {
+                if (!sourceSelection.includes(checkbox.value)) sourceSelection.push(checkbox.value);
+            } else {
+                sourceSelection = sourceSelection.filter(b => b !== checkbox.value);
+            }
+            updateSourceInputLabel();
+        }
+
+        function toggleAllSourceBranches(masterCb) {
+            const checkboxes = document.querySelectorAll('.source-cb');
+            checkboxes.forEach(cb => {
+                if (cb.closest('.filter-opt').style.display !== 'none') {
+                    cb.checked = masterCb.checked;
+                    if (masterCb.checked && !sourceSelection.includes(cb.value)) {
+                        sourceSelection.push(cb.value);
+                    } else if (!masterCb.checked) {
+                        sourceSelection = sourceSelection.filter(b => b !== cb.value);
+                    }
+                }
+            });
+            updateSourceInputLabel();
+        }
+
+        function updateSourceInputLabel() {
+            const input = document.getElementById('branch-search');
+            const masterCb = document.getElementById('master-branch-checkbox');
+            const checkedCount = sourceSelection.length;
+            
+            if (checkedCount === branches.length) {
+                input.value = "Vybrány všechny pobočky (" + branches.length + ")";
+                if(masterCb) masterCb.checked = true;
+            } else if (checkedCount === 0) {
+                input.value = "Vyberte pobočku";
+                if(masterCb) masterCb.checked = false;
+            } else if (checkedCount === 1) {
+                input.value = sourceSelection[0];
+                if(masterCb) masterCb.checked = false;
+            } else {
+                input.value = `Vybráno ${checkedCount}/${branches.length} poboček`;
+                if(masterCb) masterCb.checked = false;
+            }
+            updateDashboard();
+        }
+
+        function filterList() {
+            const input = document.getElementById('branch-search-input');
+            const filter = input.value.toLowerCase();
+            const nodes = document.querySelectorAll('.filter-opt');
+            nodes.forEach(node => {
+                const text = node.innerText.toLowerCase();
+                node.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+
+        // --- ZMĚNA OBDOBÍ A ZOBRAZENÍ VLASTNÍCH DATUMŮ ---
+        function handlePeriodChange() {
+            const period = document.getElementById('period-select').value;
+            const customFields = document.getElementById('custom-date-fields');
+            
+            if (period === 'custom') {
+                customFields.classList.remove('hidden');
+                customFields.classList.add('flex');
+                const today = new Date().toISOString().split('T')[0];
+                if (!document.getElementById('date-from').value) document.getElementById('date-from').value = today;
+                if (!document.getElementById('date-to').value) document.getElementById('date-to').value = today;
+            } else {
+                customFields.classList.add('hidden');
+                customFields.classList.remove('flex');
+            }
+            updateDashboard();
+        }
+
+        function getPeriodMultiplier() {
+            const periodSelect = document.getElementById('period-select');
+            let multiplier = 1.0;
+            if (periodSelect) {
+                switch(periodSelect.value) {
+                    case '30d': multiplier = 1.0; break;
+                    case 'tm': multiplier = 0.5; break;
+                    case 'mm': multiplier = 1.1; break;
+                    case 'tr': multiplier = 6.0; break;
+                    case 'mr': multiplier = 12.5; break;
+                    case 'all': multiplier = 35.0; break;
+                    case 'custom': multiplier = 2.4; break;
+                }
+            }
+            return multiplier;
+        }
+
+        // --- DASHBOARD LOGIKA ---
         function sortTable(column) {
             if (currentSort.column === column) {
                 currentSort.asc = !currentSort.asc;
             } else {
                 currentSort.column = column;
-                currentSort.asc = false; // default desc pro čísla
+                currentSort.asc = false;
             }
             renderTable();
         }
 
         function renderTable() {
-            const periodSelect = document.getElementById('period-select');
-            const periodFilter = periodSelect ? periodSelect.value : 'tr';
-            const branchFilter = document.getElementById('filter-branch').value;
-            const typeFilter = document.getElementById('filter-type').value;
-            const searchVal = document.getElementById('table-search').value.toLowerCase();
-
-            // Aplikace multiplikátoru podle období pro dynamický efekt
-            let multiplier = 1.0;
-            switch(periodFilter) {
-                case '30d': multiplier = 0.2; break;
-                case 'tm': multiplier = 0.1; break;
-                case 'mm': multiplier = 0.15; break;
-                case 'tr': multiplier = 1.0; break;
-                case 'mr': multiplier = 2.0; break;
-                case 'all': multiplier = 5.0; break;
-                case 'custom': multiplier = 0.3; break;
-            }
+            const typeFilter = document.getElementById('filter-type').value.toLowerCase();
+            const searchVal = document.getElementById('table-search') ? document.getElementById('table-search').value.toLowerCase() : '';
+            const multiplier = getPeriodMultiplier();
 
             let filteredData = baseProductsData.filter(p => {
-                if (branchFilter !== 'all' && p.branch !== branchFilter) return false;
-                if (typeFilter !== 'all' && p.type !== typeFilter) return false;
+                if (!sourceSelection.includes(p.branch)) return false;
+                if (typeFilter !== 'all' && p.type.toLowerCase() !== typeFilter) return false;
                 if (searchVal && !p.name.toLowerCase().includes(searchVal) && !p.branch.toLowerCase().includes(searchVal)) return false;
                 return true;
             }).map(p => {
@@ -440,7 +765,6 @@
                 return { ...p, calcScans: s, calcReviews: r, calcConv: c };
             });
 
-            // Řazení
             filteredData.sort((a, b) => {
                 let valA = a.calcScans; let valB = b.calcScans;
                 if(currentSort.column === 'name') { valA = a.name; valB = b.name; }
@@ -455,6 +779,7 @@
             });
 
             const tbody = document.getElementById('nfc-stats-tbody');
+            if(!tbody) return;
             let html = '';
 
             filteredData.forEach(p => {
@@ -486,7 +811,6 @@
 
             tbody.innerHTML = html;
 
-            // Update KPI
             let tScans = filteredData.reduce((sum, p) => sum + p.calcScans, 0);
             let tReviews = filteredData.reduce((sum, p) => sum + p.calcReviews, 0);
             let tConv = tScans > 0 ? (tReviews / tScans) * 100 : 0;
@@ -496,23 +820,23 @@
             document.getElementById('val-conversion').innerText = tConv.toFixed(1) + '%';
         }
 
-        // Init a Update grafu
         function initChart() {
-            const ctx = document.getElementById('nfcTrendChart').getContext('2d');
+            const ctx = document.getElementById('nfcTrendChart');
+            if(!ctx) return;
             
-            // Gradient pro zelenou brand-500 (#16a34a)
-            const gradientBrand = ctx.createLinearGradient(0, 0, 0, 300);
+            const ctx2d = ctx.getContext('2d');
+            const gradientBrand = ctx2d.createLinearGradient(0, 0, 0, 300);
             gradientBrand.addColorStop(0, 'rgba(22, 163, 74, 0.2)'); 
             gradientBrand.addColorStop(1, 'rgba(22, 163, 74, 0)');
 
-            trendChart = new Chart(ctx, {
+            trendChart = new Chart(ctx2d, {
                 type: 'line',
                 data: {
-                    labels: ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'],
+                    labels: [],
                     datasets: [
                         { 
                             label: 'Počet načtení', 
-                            data: [65, 80, 120, 110, 140, 160, 155, 180, 210, 190, 220, 240], 
+                            data: [], 
                             borderColor: '#16a34a', 
                             backgroundColor: gradientBrand, 
                             fill: true, 
@@ -541,8 +865,6 @@
 
         function toggleChartMetric(metric) {
             currentChartMetric = metric;
-            
-            // Změna vizuálu tlačítek
             const btnScans = document.getElementById('btn-metric-scans');
             const btnReviews = document.getElementById('btn-metric-reviews');
             
@@ -552,66 +874,6 @@
             } else {
                 btnReviews.className = 'px-4 py-1.5 rounded bg-white shadow text-gray-900 transition';
                 btnScans.className = 'px-4 py-1.5 rounded text-gray-500 hover:text-gray-900 transition';
-            }
-            
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            renderTable();
-            
-            // Dynamický update grafu podle období (fake data animace)
-            const period = document.getElementById('filter-period').value;
-            let newLabels = [];
-            let newData = [];
-
-            if (period === 'year') {
-                newLabels = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'];
-                newData = [65, 80, 120, 110, 140, 160, 155, 180, 210, 190, 220, 240];
-            } else if (period === 'month') {
-                newLabels = ['1. týden', '2. týden', '3. týden', '4. týden'];
-                newData = [30, 45, 25, 40];
-            } else {
-                newLabels = ['1. týden', '2. týden', '3. týden', '4. týden'];
-                newData = [25, 30, 35, 20];
-            }
-
-            // Rozbití dat na základě filtru pobočky/typu pro reálnější dojem
-            const branchF = document.getElementById('filter-branch').value;
-            const typeF = document.getElementById('filter-type').value;
-            let modifier = 1;
-            if (branchF !== 'all') modifier *= 0.4;
-            if (typeF !== 'all') modifier *= 0.6;
-
-            newData = newData.map(v => Math.round(v * modifier));
-
-            // Aplikace vybrané metriky pro graf (Načtení vs Recenze)
-            if (currentChartMetric === 'reviews') {
-                newData = newData.map(v => Math.round(v * 0.25)); // Přibližně 25% konverze na recenze
-                trendChart.data.datasets[0].label = 'Počet recenzí';
-            } else {
-                trendChart.data.datasets[0].label = 'Počet načtení';
-            }
-
-            trendChart.data.labels = newLabels;
-            trendChart.data.datasets[0].data = newData;
-            trendChart.update();
-        }
-
-        function handlePeriodChange() {
-            const period = document.getElementById('period-select').value;
-            const customFields = document.getElementById('custom-date-fields');
-            
-            if (period === 'custom') {
-                customFields.classList.remove('hidden');
-                customFields.classList.add('flex');
-                
-                const today = new Date().toISOString().split('T')[0];
-                if (!document.getElementById('date-from').value) document.getElementById('date-from').value = today;
-                if (!document.getElementById('date-to').value) document.getElementById('date-to').value = today;
-            } else {
-                customFields.classList.add('hidden');
-                customFields.classList.remove('flex');
             }
             updateDashboard();
         }
@@ -646,8 +908,8 @@
                     distribution = [0.05, 0.10, 0.15, 0.20, 0.25, 0.25];
                     break;
                 case 'custom': 
-                    const dF = document.getElementById('date-from').value;
-                    const dT = document.getElementById('date-to').value;
+                    const dF = document.getElementById('date-from') ? document.getElementById('date-from').value : '';
+                    const dT = document.getElementById('date-to') ? document.getElementById('date-to').value : '';
                     if(dF && dT) {
                         const dateFrom = new Date(dF).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
                         const dateTo = new Date(dT).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
@@ -659,39 +921,471 @@
                     break;
             }
 
-            let baseTotal = 1850; 
-            if (period === '30d') baseTotal = 300;
-            if (period === 'tm' || period === 'mm') baseTotal = 350;
-            if (period === 'all') baseTotal = 5500;
-            if (period === 'custom') baseTotal = 450;
+            const typeFilter = document.getElementById('filter-type').value.toLowerCase();
+            const multiplier = getPeriodMultiplier();
+            
+            let totalScans = 0;
+            let totalReviews = 0;
+            baseProductsData.forEach(p => {
+                if(sourceSelection.includes(p.branch) && (typeFilter === 'all' || p.type.toLowerCase() === typeFilter)) {
+                    totalScans += (p.scans * multiplier);
+                    totalReviews += (p.reviews * multiplier);
+                }
+            });
 
-            let newData = distribution.map(factor => Math.round(baseTotal * factor));
-
-            // Rozbití dat na základě filtru pobočky/typu pro reálnější dojem
-            const branchF = document.getElementById('filter-branch').value;
-            const typeF = document.getElementById('filter-type').value;
-            let modifier = 1;
-            if (branchF !== 'all') modifier *= 0.4;
-            if (typeF !== 'all') modifier *= 0.6;
-
-            newData = newData.map(v => Math.round(v * modifier));
-
-            // Aplikace vybrané metriky pro graf (Načtení vs Recenze)
-            if (currentChartMetric === 'reviews') {
-                newData = newData.map(v => Math.round(v * 0.25)); // Přibližně 25% konverze na recenze
-                trendChart.data.datasets[0].label = 'Počet recenzí';
-            } else {
-                trendChart.data.datasets[0].label = 'Počet načtení';
+            if (trendChart) {
+                if (currentChartMetric === 'reviews') {
+                    trendChart.data.datasets[0].data = distribution.map(factor => Math.round(totalReviews * factor));
+                    trendChart.data.datasets[0].label = 'Počet recenzí';
+                } else {
+                    trendChart.data.datasets[0].data = distribution.map(factor => Math.round(totalScans * factor));
+                    trendChart.data.datasets[0].label = 'Počet načtení';
+                }
+                trendChart.data.labels = newLabels;
+                trendChart.update();
             }
 
-            trendChart.data.labels = newLabels;
-            trendChart.data.datasets[0].data = newData;
-            trendChart.update();
+            // Pokud jsou zobrazené i další taby, překreslit
+            if (compChart) updateAllCompBlocks();
+            if (groupChart) updateAllGroupBlocks();
         }
 
+        // --- POROVNÁNÍ POBOČEK ---
+        function toggleCompareDropdown() {
+            const dropdown = document.getElementById('compare-dropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                document.getElementById('compare-branch-search').focus();
+            }
+            renderCompareCheckboxes();
+        }
+
+        function renderCompareCheckboxes() {
+            const container = document.getElementById('compare-dropdown-list');
+            if(!container) return;
+            let html = '';
+            branches.forEach(b => {
+                const checked = compareSelection.includes(b) ? 'checked' : '';
+                html += `
+                <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer transition compare-filter-opt">
+                    <input type="checkbox" value="${b}" onchange="updateCompareSelection(this)" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" ${checked}>
+                    <span class="text-sm text-gray-700">${b}</span>
+                </label>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function filterCompareBranches() {
+            const input = document.getElementById('compare-branch-search');
+            const filter = input.value.toLowerCase();
+            const nodes = document.querySelectorAll('.compare-filter-opt');
+            nodes.forEach(node => {
+                const text = node.innerText.toLowerCase();
+                node.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+
+        function updateCompareSelection(checkbox) {
+            if (checkbox.checked) {
+                if (compareSelection.length >= 10) {
+                    checkbox.checked = false;
+                    showToast('Lze porovnávat maximálně 10 poboček.');
+                    return;
+                }
+                compareSelection.push(checkbox.value);
+            } else {
+                compareSelection = compareSelection.filter(b => b !== checkbox.value);
+            }
+            document.getElementById('compare-count-label').innerText = `Vybráno ${compareSelection.length} poboček`;
+            updateAllCompBlocks();
+        }
+
+        function initCompareCharts() {
+            if (compChart) return; 
+            const opts = { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { grid: { display: false } }, 
+                    y: { grid: { color: '#f3f4f6' }, beginAtZero: true } 
+                },
+                animation: { duration: 400 }
+            };
+            const ctx = document.getElementById('compChart');
+            if(ctx) {
+                compChart = new Chart(ctx.getContext('2d'), { type: 'bar', data: {labels:[], datasets:[{label:'Hodnota', data:[], backgroundColor: '#d1d5db', borderRadius: 4}]}, options: opts });
+                updateAllCompBlocks();
+            }
+        }
+
+        function setCompMetric(metric, label) { 
+            compMetric = metric; 
+            const container = document.getElementById('comp-tabs-nfc');
+            if(container) {
+                container.querySelectorAll('button').forEach(btn => {
+                    if(btn.dataset.metric === metric) {
+                        btn.className = 'px-3 py-1.5 text-xs font-bold bg-white border border-gray-200 rounded shadow-sm text-brand-600 border-brand-200 whitespace-nowrap';
+                    } else {
+                        btn.className = 'px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap';
+                    }
+                });
+            }
+            renderCompLeaderboard(label); 
+        }
+
+        function getNfcBranchData(branch) {
+            let scans = 0, revs = 0, topScans = -1, topName = '';
+            const multiplier = getPeriodMultiplier();
+            const typeFilter = document.getElementById('filter-type').value.toLowerCase();
+            
+            baseProductsData.forEach(p => {
+                if (p.branch === branch && (typeFilter === 'all' || p.type.toLowerCase() === typeFilter)) {
+                    let s = p.scans * multiplier;
+                    let r = p.reviews * multiplier;
+                    scans += s;
+                    revs += r;
+                    if (s > topScans) { topScans = s; topName = p.name; }
+                }
+            });
+            
+            return { scans, reviews: revs, conversion: scans > 0 ? (revs/scans)*100 : 0, topName: topName || '-' };
+        }
+
+        function renderCompLeaderboard(labelTitle) {
+            const titleEl = document.getElementById('title-comp-leaderboard');
+            if(titleEl) titleEl.innerText = `Žebříček (${labelTitle})`;
+            
+            let dataList = compareSelection.map(b => {
+                const res = getNfcBranchData(b);
+                let val = res[compMetric];
+                return { name: b, value: val, extra: `Nej: ${res.topName}` };
+            });
+            
+            dataList.sort((a,b) => b.value - a.value);
+            let html = '';
+            dataList.forEach((item, index) => {
+                 let medal = index === 0 ? 'medal-1' : (index === 1 ? 'medal-2' : (index === 2 ? 'medal-3' : 'text-gray-400'));
+                 let valStr = compMetric === 'conversion' ? item.value.toFixed(1) + ' %' : Math.round(item.value).toLocaleString();
+                 
+                 html += `
+                 <div class="flex items-center justify-between p-3 ${index < 3 ? 'rounded-lg bg-gray-50/50 border border-gray-100 mb-1' : 'border-b border-gray-50 last:border-0'}">
+                     <div class="flex items-center gap-3">
+                         <span class="font-bold text-lg w-5 text-center ${medal}">${index + 1}.</span>
+                         <div>
+                             <p class="text-sm font-bold text-gray-900">${item.name}</p>
+                             <p class="text-[10px] text-gray-500 mt-0.5">${item.extra}</p>
+                         </div>
+                     </div>
+                     <span class="font-bold text-gray-900 text-sm">${valStr}</span>
+                 </div>
+                 `;
+            });
+            
+            const lb = document.getElementById('comp-leaderboard');
+            if(lb) lb.innerHTML = html || '<p class="text-sm text-gray-500 p-3">Žádná data pro výběr.</p>';
+            
+            if(!compChart) return;
+            let chartData = compareSelection.map(b => getNfcBranchData(b)[compMetric]);
+            let maxVal = Math.max(...chartData);
+            compChart.data.labels = compareSelection.length > 0 ? compareSelection : ['Prázdné'];
+            compChart.data.datasets[0].data = chartData;
+            compChart.data.datasets[0].backgroundColor = chartData.map(v => (v === maxVal && maxVal > 0) ? '#16a34a' : '#d1d5db');
+            compChart.update();
+        }
+
+        function updateAllCompBlocks() {
+            if(!compChart) return; 
+            const btn = document.querySelector(`#comp-tabs-nfc button[data-metric="${compMetric}"]`);
+            renderCompLeaderboard(btn ? btn.innerText : 'Počet načtení');
+        }
+
+        // --- SKUPINY A TÝMY ---
+        function toggleGroupDropdown() {
+            const dropdown = document.getElementById('group-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function renderGroupCheckboxes() {
+            const container = document.getElementById('group-dropdown-list');
+            if(!container) return;
+            let html = '';
+            customGroups.forEach(g => {
+                const checked = compareGroupSelection.includes(g.name) ? 'checked' : '';
+                html += `
+                <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded transition border border-transparent hover:border-gray-200">
+                    <label class="flex items-center gap-2 cursor-pointer flex-1">
+                        <input type="checkbox" value="${g.name}" onchange="updateGroupSelection(this)" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" ${checked}>
+                        <div>
+                            <span class="text-sm font-bold text-gray-700">${g.name}</span>
+                            <span class="text-[10px] text-gray-400 block">${g.branches.length} poboček</span>
+                        </div>
+                    </label>
+                    <div class="flex items-center gap-2 bg-white pl-2">
+                        <button onclick="openEditGroupModal('${g.name}')" class="text-brand-500 hover:text-brand-700 transition p-1.5 rounded hover:bg-brand-50 shadow-sm border border-brand-100" title="Upravit skupinu"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteGroup('${g.name}')" class="text-red-500 hover:text-red-700 transition p-1.5 rounded hover:bg-red-50 shadow-sm border border-red-100" title="Smazat skupinu"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+            document.getElementById('group-count-label').innerText = `Vybrány ${compareGroupSelection.length} skupiny`;
+        }
+
+        function updateGroupSelection(checkbox) {
+            if (checkbox.checked) {
+                if (compareGroupSelection.length >= 10) {
+                    checkbox.checked = false;
+                    showToast('Lze porovnávat maximálně 10 skupin.');
+                    return;
+                }
+                compareGroupSelection.push(checkbox.value);
+            } else {
+                compareGroupSelection = compareGroupSelection.filter(g => g !== checkbox.value);
+            }
+            document.getElementById('group-count-label').innerText = `Vybrány ${compareGroupSelection.length} skupiny`;
+            updateAllGroupBlocks();
+        }
+
+        function initGroupCharts() {
+            if (groupChart) return; 
+            const opts = { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { grid: { display: false } }, 
+                    y: { grid: { color: '#f3f4f6' }, beginAtZero: true } 
+                },
+                animation: { duration: 400 }
+            };
+            const ctx = document.getElementById('groupChart');
+            if(ctx) {
+                groupChart = new Chart(ctx.getContext('2d'), { type: 'bar', data: {labels:[], datasets:[{label:'Hodnota', data:[], backgroundColor: '#d1d5db', borderRadius: 4}]}, options: opts });
+                renderGroupCheckboxes();
+                updateAllGroupBlocks();
+            }
+        }
+
+        function setGroupMetric(metric, label) { 
+            groupMetric = metric; 
+            const container = document.getElementById('group-tabs-nfc');
+            if(container) {
+                container.querySelectorAll('button').forEach(btn => {
+                    if(btn.dataset.metric === metric) {
+                        btn.className = 'px-3 py-1.5 text-xs font-bold bg-white border border-gray-200 rounded shadow-sm text-brand-600 border-brand-200 whitespace-nowrap';
+                    } else {
+                        btn.className = 'px-3 py-1.5 text-xs font-medium bg-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap';
+                    }
+                });
+            }
+            renderGroupLeaderboard(label); 
+        }
+
+        function getNfcGroupData(groupName) {
+            let group = customGroups.find(g => g.name === groupName);
+            if(!group) return { scans: 0, reviews: 0, conversion: 0, extra: '' };
+
+            let scans = 0, revs = 0;
+            group.branches.forEach(b => {
+                let res = getNfcBranchData(b);
+                scans += res.scans;
+                revs += res.reviews;
+            });
+            return { scans, reviews: revs, conversion: scans > 0 ? (revs/scans)*100 : 0, extra: `${group.branches.length} poboček` };
+        }
+
+        function renderGroupLeaderboard(labelTitle) {
+            const titleEl = document.getElementById('title-group-leaderboard');
+            if(titleEl) titleEl.innerText = `Žebříček (${labelTitle})`;
+            
+            let dataList = compareGroupSelection.map(gName => {
+                const res = getNfcGroupData(gName);
+                return { name: gName, value: res[groupMetric], extra: res.extra };
+            });
+            
+            dataList.sort((a,b) => b.value - a.value);
+            let html = '';
+            dataList.forEach((item, index) => {
+                 let medal = index === 0 ? 'medal-1' : (index === 1 ? 'medal-2' : (index === 2 ? 'medal-3' : 'text-gray-400'));
+                 let valStr = groupMetric === 'conversion' ? item.value.toFixed(1) + ' %' : Math.round(item.value).toLocaleString();
+                 
+                 html += `
+                 <div class="flex items-center justify-between p-3 ${index < 3 ? 'rounded-lg bg-gray-50/50 border border-gray-100 mb-1' : 'border-b border-gray-50 last:border-0'}">
+                     <div class="flex items-center gap-3">
+                         <span class="font-bold text-lg w-5 text-center ${medal}">${index + 1}.</span>
+                         <div>
+                             <p class="text-sm font-bold text-gray-900">${item.name}</p>
+                             <p class="text-[10px] text-gray-500 mt-0.5">${item.extra}</p>
+                         </div>
+                     </div>
+                     <span class="font-bold text-gray-900 text-sm">${valStr}</span>
+                 </div>
+                 `;
+            });
+            
+            const lb = document.getElementById('group-leaderboard');
+            if(lb) lb.innerHTML = html || '<p class="text-sm text-gray-500 p-3">Žádná data pro výběr.</p>';
+            
+            if(!groupChart) return;
+            let chartData = compareGroupSelection.map(gName => getNfcGroupData(gName)[groupMetric]);
+            let maxVal = Math.max(...chartData);
+            groupChart.data.labels = compareGroupSelection.length > 0 ? compareGroupSelection : ['Prázdné'];
+            groupChart.data.datasets[0].data = chartData;
+            groupChart.data.datasets[0].backgroundColor = chartData.map(v => (v === maxVal && maxVal > 0) ? '#16a34a' : '#d1d5db');
+            groupChart.update();
+        }
+
+        function updateAllGroupBlocks() {
+            if(!groupChart) return; 
+            const btn = document.querySelector(`#group-tabs-nfc button[data-metric="${groupMetric}"]`);
+            renderGroupLeaderboard(btn ? btn.innerText : 'Počet načtení');
+        }
+
+        // --- VYTVÁŘENÍ SKUPIN (MODAL) ---
+        let editingGroupName = null;
+
+        function openCreateGroupModal() {
+            editingGroupName = null;
+            const modal = document.getElementById('create-group-modal');
+            const modalContent = modal.querySelector('div');
+            
+            const titleEl = document.getElementById('modal-group-title');
+            if (titleEl) titleEl.innerText = 'Vytvořit novou skupinu / tým';
+
+            document.getElementById('new-group-name').value = '';
+            document.getElementById('create-group-search').value = '';
+            
+            const listContainer = document.getElementById('create-group-branch-list');
+            let html = '';
+            branches.forEach(b => {
+                html += `
+                <label class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer transition create-group-opt">
+                    <input type="checkbox" value="${b}" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 new-group-cb">
+                    <span>${b}</span>
+                </label>`;
+            });
+            listContainer.innerHTML = html;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+        }
+
+        function openEditGroupModal(groupName) {
+            editingGroupName = groupName;
+            const group = customGroups.find(g => g.name === groupName);
+            if(!group) return;
+
+            const modal = document.getElementById('create-group-modal');
+            const modalContent = modal.querySelector('div');
+            
+            const titleEl = document.getElementById('modal-group-title');
+            if (titleEl) titleEl.innerText = 'Upravit skupinu / tým';
+
+            document.getElementById('new-group-name').value = group.name;
+            document.getElementById('create-group-search').value = '';
+
+            const listContainer = document.getElementById('create-group-branch-list');
+            let html = '';
+            branches.forEach(b => {
+                const checked = group.branches.includes(b) ? 'checked' : '';
+                html += `
+                <label class="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md cursor-pointer transition create-group-opt">
+                    <input type="checkbox" value="${b}" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500 new-group-cb" ${checked}>
+                    <span>${b}</span>
+                </label>`;
+            });
+            listContainer.innerHTML = html;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+        }
+
+        function deleteGroup(groupName) {
+            customGroups = customGroups.filter(g => g.name !== groupName);
+            compareGroupSelection = compareGroupSelection.filter(name => name !== groupName);
+            showToast(`Skupina ${groupName} byla odstraněna.`);
+            renderGroupCheckboxes();
+            updateAllGroupBlocks();
+        }
+
+        function closeCreateGroupModal() {
+            const modal = document.getElementById('create-group-modal');
+            const modalContent = modal.querySelector('div');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('opacity-0', 'pointer-events-none'), 300);
+        }
+
+        function filterCreateGroupBranches() {
+            const input = document.getElementById('create-group-search');
+            const filter = input.value.toLowerCase();
+            const nodes = document.querySelectorAll('.create-group-opt');
+            nodes.forEach(node => {
+                const text = node.innerText.toLowerCase();
+                node.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+
+        function submitCreateGroup() {
+            const nameInput = document.getElementById('new-group-name').value.trim();
+            if (!nameInput) {
+                showToast('Zadejte prosím název skupiny.');
+                return;
+            }
+            
+            const selectedBranches = [];
+            document.querySelectorAll('.new-group-cb:checked').forEach(cb => selectedBranches.push(cb.value));
+            
+            if (selectedBranches.length === 0) {
+                showToast('Vyberte alespoň jednu pobočku pro tuto skupinu.');
+                return;
+            }
+
+            if (editingGroupName) {
+                const groupIndex = customGroups.findIndex(g => g.name === editingGroupName);
+                if (groupIndex > -1) {
+                    customGroups[groupIndex].name = nameInput;
+                    customGroups[groupIndex].branches = selectedBranches;
+                }
+                if (editingGroupName !== nameInput) {
+                    const selIndex = compareGroupSelection.indexOf(editingGroupName);
+                    if (selIndex > -1) {
+                        compareGroupSelection[selIndex] = nameInput;
+                    }
+                }
+                showToast(`Skupina ${nameInput} byla úspěšně upravena.`);
+            } else {
+                customGroups.push({ name: nameInput, branches: selectedBranches });
+                compareGroupSelection.push(nameInput);
+                showToast(`Skupina ${nameInput} byla úspěšně vytvořena a přidána.`);
+            }
+            
+            closeCreateGroupModal();
+            renderGroupCheckboxes();
+            updateAllGroupBlocks();
+        }
+
+        // Zavírání dropdownů kliknutím jinam
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('filter-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                const dropdown = document.getElementById('branch-dropdown');
+                if(dropdown) dropdown.classList.add('hidden');
+            }
+            const compWrapper = document.getElementById('compare-dropdown');
+            if (compWrapper && compWrapper.parentElement && !compWrapper.parentElement.contains(e.target)) {
+                compWrapper.classList.add('hidden');
+            }
+            const groupWrapper = document.getElementById('group-dropdown');
+            if (groupWrapper && groupWrapper.parentElement && !groupWrapper.parentElement.contains(e.target)) {
+                groupWrapper.classList.add('hidden');
+            }
+        });
+
+        // INIT
         window.onload = function() {
+            renderSourceCheckboxes();
             initChart();
-            updateDashboard();
+            updateDashboard(); 
         };
     </script>
 </body>
